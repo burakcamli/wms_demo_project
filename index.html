@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>WMS - Mal Kabul</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#eef1f5;color:#27313d;font-size:13px}
+button,input,select{font:inherit}
+.topbar{height:54px;background:#263746;color:#fff;display:flex;align-items:center;padding:0 18px;gap:22px}
+.logo{font-size:17px;font-weight:bold;letter-spacing:.3px}
+.page-title{font-size:14px;border-left:1px solid #61707d;padding-left:22px}
+.user-area{margin-left:auto;font-size:12px;color:#dce4ea}
+.layout{display:flex;min-height:calc(100vh - 54px)}
+.sidebar{width:205px;background:#fff;border-right:1px solid #d4dbe2;padding:12px 0}
+.menu-title{font-size:11px;color:#7a8792;font-weight:bold;padding:9px 15px 6px;text-transform:uppercase}
+.menu-item{padding:9px 15px;color:#44515d;cursor:pointer;border-left:3px solid transparent}
+.menu-item:hover{background:#f1f4f7}
+.menu-item.active{background:#e9f1f8;border-left-color:#2777b8;color:#14598b;font-weight:bold}
+.main{flex:1;padding:13px 15px;min-width:0}
+.toolbar{height:42px;background:#fff;border:1px solid #d4dbe2;display:flex;align-items:center;padding:0 8px;gap:5px;margin-bottom:10px}
+.btn{height:30px;border:1px solid #bfc8d0;background:#fff;border-radius:3px;padding:0 13px;cursor:pointer;color:#34414d}
+.btn:hover{background:#f1f4f7}
+.btn.primary{background:#2878b8;border-color:#21689f;color:#fff}
+.btn.primary:hover{background:#216b9f}
+.btn.success{background:#318557;border-color:#2a724b;color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.separator{height:23px;width:1px;background:#d8dee4;margin:0 4px}
+.section{background:#fff;border:1px solid #d4dbe2;margin-bottom:10px}
+.section-head{height:35px;background:#f4f6f8;border-bottom:1px solid #d4dbe2;display:flex;align-items:center;padding:0 11px;font-weight:bold;color:#394752}
+.section-head .hint{font-weight:normal;color:#788591;margin-left:auto;font-size:11px}
+.section-body{padding:10px}
+.search-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr 110px;gap:8px;align-items:end}
+.field label{display:block;color:#687580;font-size:11px;margin-bottom:4px}
+.field input,.field select{height:31px;border:1px solid #c7d0d8;border-radius:3px;padding:0 8px;width:100%;background:#fff}
+.field input:focus,.field select:focus{outline:none;border-color:#4a91c4;box-shadow:0 0 0 2px #e4f1fa}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse}
+th{background:#edf1f4;color:#53616c;text-align:left;font-size:11px;font-weight:bold;border:1px solid #d1d9df;padding:7px 8px;white-space:nowrap}
+td{border:1px solid #dbe1e6;padding:7px 8px;white-space:nowrap}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:#f6f9fb}
+tbody tr.selected{background:#dcecf8}
+.center{text-align:center}
+.right{text-align:right}
+.badge{display:inline-block;padding:3px 7px;border-radius:10px;font-size:10px}
+.badge.open{background:#e4f2e9;color:#28734a}
+.badge.partial{background:#fff1d7;color:#966313}
+.badge.done{background:#e5e9ed;color:#69747d}
+.selected-info{display:flex;align-items:center;gap:12px;background:#f7fafc;border:1px solid #d9e2e8;padding:8px 10px;margin-bottom:9px}
+.selected-info strong{color:#1f638e}
+.selected-info .muted{color:#75828c}
+.input-row{display:grid;grid-template-columns:1.15fr 1.1fr 1.4fr 150px 115px;gap:8px;align-items:end}
+.quantity{font-weight:bold;text-align:right}
+.actionbar{display:flex;gap:7px;align-items:end}
+.order-note{font-size:11px;color:#687580;margin-top:7px}
+.drag-handle{cursor:grab;color:#82909b;font-size:16px}
+.order-row.dragging{opacity:.45}
+tfoot td{background:#f7f8fa;font-weight:bold}
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.summary-box{border:1px solid #d7dee4;background:#fafbfc;padding:9px}
+.summary-box span{display:block;color:#78848e;font-size:11px}
+.summary-box strong{display:block;font-size:16px;margin-top:4px;color:#33424d}
+.final-grid{display:grid;grid-template-columns:1.05fr 1fr 1fr 1fr;gap:8px}
+.final-grid .field:last-child{grid-column:auto}
+.status{padding:8px 10px;background:#eef7f1;border:1px solid #cce3d4;color:#286d46;border-radius:3px}
+.footer-actions{display:flex;justify-content:flex-end;gap:8px;padding:10px;background:#f4f6f8;border-top:1px solid #d4dbe2}
+.help{color:#6d7a84;font-size:11px;margin-left:4px}
+.hidden{display:none!important}
+@media(max-width:950px){
+ .sidebar{display:none}.search-grid,.input-row,.final-grid{grid-template-columns:1fr 1fr}.summary{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">WMS</div>
+  <div class="page-title">Mal Kabul İşlemleri</div>
+  <div class="user-area">Kullanıcı: Demo Kullanıcı &nbsp;|&nbsp; Depo: MERKEZ</div>
+</div>
+
+<div class="layout">
+<aside class="sidebar">
+  <div class="menu-title">WMS İşlemleri</div>
+  <div class="menu-item active">Mal Kabul</div>
+  <div class="menu-item">Sevkiyat</div>
+  <div class="menu-item">Stok Sorgulama</div>
+  <div class="menu-item">Depo Transferi</div>
+  <div class="menu-item">Sayım İşlemleri</div>
+  <div class="menu-item">Etiket İşlemleri</div>
+  <div class="menu-item">Mal Kabul Takip</div>
+  <div class="menu-title">Tanımlar</div>
+  <div class="menu-item">Tedarikçiler</div>
+  <div class="menu-item">Malzemeler</div>
+  <div class="menu-item">Depolar</div>
+</aside>
+
+<main class="main">
+  <div class="toolbar">
+    <button class="btn" onclick="newReceipt()">Yeni</button>
+    <button class="btn primary" onclick="saveReceipt()">Kaydet</button>
+    <button class="btn" onclick="printLabel()">Etiket</button>
+    <button class="btn" onclick="clearForm()">Temizle</button>
+    <div class="separator"></div>
+    <span class="help">1. Tedarikçi/sipariş seç → 2. Barkod okut → 3. Miktarı dağıt → 4. İrsaliye bilgilerini gir → 5. Kaydet</span>
+  </div>
+
+  <!-- 1 -->
+  <section class="section">
+    <div class="section-head">
+      1. Tedarikçi / Sipariş Sorgulama
+      <span class="hint">Tedarikçi, sipariş no veya malzeme no ile arama yapabilirsiniz.</span>
+    </div>
+    <div class="section-body">
+      <div class="search-grid">
+        <div class="field">
+          <label>Tedarikçi</label>
+          <input id="searchSupplier" placeholder="Örn. Akdeniz Plastik">
+        </div>
+        <div class="field">
+          <label>Sipariş No</label>
+          <input id="searchOrder" placeholder="Örn. SIP-2026-104">
+        </div>
+        <div class="field">
+          <label>Malzeme No</label>
+          <input id="searchMaterial" placeholder="Örn. M-10025">
+        </div>
+        <button class="btn primary" onclick="searchOrders()">Sorgula</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">Sorgu Sonuçları <span class="hint" id="resultCount"></span></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="center">Seç</th><th>Tedarikçi Kodu</th><th>Tedarikçi Adı</th><th>Sipariş No</th>
+            <th>Sipariş Tarihi</th><th>Malzeme</th><th>Malzeme Açıklaması</th>
+            <th class="right">Açık Miktar</th><th>Durum</th>
+          </tr>
+        </thead>
+        <tbody id="resultBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="section">
+    <div class="section-head">2. Seçilen Tedarikçi / Sipariş</div>
+    <div class="section-body">
+      <div id="selectedInfo" class="selected-info">
+        <span class="muted">Henüz bir kayıt seçilmedi.</span>
+      </div>
+
+      <div class="input-row">
+        <div class="field">
+          <label>Barkod</label>
+          <input id="barcode" placeholder="Barkodu okutun veya girin" onkeydown="if(event.key==='Enter')scanBarcode()">
+        </div>
+        <div class="field">
+          <label>Malzeme</label>
+          <input id="material" readonly>
+        </div>
+        <div class="field">
+          <label>Malzeme Açıklaması</label>
+          <input id="materialDesc" readonly>
+        </div>
+        <div class="field">
+          <label>Mal Kabul Miktarı</label>
+          <input id="acceptQty" class="quantity" type="number" min="0" step="1" value="0">
+        </div>
+        <div class="actionbar">
+          <button class="btn" onclick="scanBarcode()">Barkodu Sorgula</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="section">
+    <div class="section-head">
+      3. Siparişlere Dağıtım
+      <span class="hint">Satırları sürükleyerek kabul önceliğini değiştirebilirsiniz.</span>
+    </div>
+    <div class="section-body">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th style="width:35px">#</th><th style="width:30px"></th><th>Sipariş</th><th>Tarih</th><th>Malzeme</th><th class="right">Planlanan</th><th class="right">Kalan</th><th class="right">Bu Kabul</th><th>Durum</th></tr>
+          </thead>
+          <tbody id="orderBody"></tbody>
+          <tfoot><tr><td colspan="6">Toplam</td><td class="right" id="totalOpen">0</td><td class="right" id="totalAccept">0</td><td></td></tr></tfoot>
+        </table>
+      </div>
+      <div class="order-note">Örnek: 20 + 30 + 50 koli açık siparişte 70 koli kabul girerseniz sistem otomatik olarak 20 + 30 + 20 dağıtır.</div>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="section">
+    <div class="section-head">4. Kabul Özeti</div>
+    <div class="section-body">
+      <div class="summary">
+        <div class="summary-box"><span>Toplam Kabul</span><strong id="sumAccept">0 KO</strong></div>
+        <div class="summary-box"><span>Dağıtılmamış Miktar</span><strong id="sumRemaining">0 KO</strong></div>
+        <div class="summary-box"><span>Seçilen Sipariş</span><strong id="sumOrder">-</strong></div>
+        <div class="summary-box"><span>ERP Durumu</span><strong id="erpStatus">Hazır</strong></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 - EN SON -->
+  <section class="section">
+    <div class="section-head">
+      5. İrsaliye ve Mal Kabul Kaydı
+      <span class="hint">Dağıtım tamamlandıktan sonra irsaliye bilgilerini girin.</span>
+    </div>
+    <div class="section-body">
+      <div class="final-grid">
+        <div class="field"><label>İrsaliye No</label><input id="invoiceNo" placeholder="İrsaliye numarası"></div>
+        <div class="field"><label>İrsaliye Tarihi</label><input id="invoiceDate" type="date"></div>
+        <div class="field"><label>Mal Kabul Tarihi</label><input id="receiptDate" type="date"></div>
+        <div class="field"><label>Depo</label><select id="warehouse"><option>MERKEZ</option><option>HAMMADDE</option><option>SEVKİYAT</option></select></div>
+      </div>
+      <div style="margin-top:8px" class="field">
+        <label>Açıklama</label>
+        <input id="description" placeholder="İsteğe bağlı açıklama">
+      </div>
+    </div>
+    <div class="footer-actions">
+      <div class="status" id="saveStatus">Mal kabul kayda hazır.</div>
+      <button class="btn" onclick="printLabel()">Etiket Önizleme</button>
+      <button class="btn success" onclick="saveReceipt()">Mal Kabulünü Kaydet</button>
+    </div>
+  </section>
+</main>
+</div>
+
+<script>
+const orders=[
+ {supplier:'T001',supplierName:'Akdeniz Plastik San. Tic. Ltd. Şti.',order:'SIP-2026-104',date:'05.09.2026',material:'M-10025',desc:'Plastik Kapak 50 mm',qty:20},
+ {supplier:'T001',supplierName:'Akdeniz Plastik San. Tic. Ltd. Şti.',order:'SIP-2026-118',date:'12.09.2026',material:'M-10025',desc:'Plastik Kapak 50 mm',qty:30},
+ {supplier:'T001',supplierName:'Akdeniz Plastik San. Tic. Ltd. Şti.',order:'SIP-2026-127',date:'19.09.2026',material:'M-10025',desc:'Plastik Kapak 50 mm',qty:50},
+ {supplier:'T002',supplierName:'Ege Ambalaj San. A.Ş.',order:'SIP-2026-109',date:'08.09.2026',material:'M-10040',desc:'Karton Kutu 40x30',qty:40},
+ {supplier:'T002',supplierName:'Ege Ambalaj San. A.Ş.',order:'SIP-2026-132',date:'22.09.2026',material:'M-10040',desc:'Karton Kutu 40x30',qty:25},
+ {supplier:'T003',supplierName:'Marmara Metal Endüstri A.Ş.',order:'SIP-2026-097',date:'01.09.2026',material:'M-20010',desc:'Metal Bağlantı Aparatı',qty:60},
+ {supplier:'T003',supplierName:'Marmara Metal Endüstri A.Ş.',order:'SIP-2026-121',date:'16.09.2026',material:'M-20010',desc:'Metal Bağlantı Aparatı',qty:35},
+ {supplier:'T004',supplierName:'Nova Teknik Malzeme Ltd.',order:'SIP-2026-113',date:'10.09.2026',material:'M-30015',desc:'Teknik Kauçuk Conta',qty:45},
+ {supplier:'T005',supplierName:'Doğa Kimya San. Tic.',order:'SIP-2026-125',date:'18.09.2026',material:'M-40020',desc:'Endüstriyel Temizleyici',qty:80}
+];
+
+let filtered=[...orders], selectedIndex=-1, activeMaterial='', orderRows=[];
+
+function renderResults(){
+ const body=document.getElementById('resultBody');
+ body.innerHTML='';
+ filtered.forEach((o,i)=>{
+   const tr=document.createElement('tr');
+   tr.className=i===selectedIndex?'selected':'';
+   tr.onclick=()=>selectOrder(i);
+   tr.innerHTML=`<td class="center"><input type="radio" name="orderSelect" ${i===selectedIndex?'checked':''}></td>
+   <td>${o.supplier}</td><td>${o.supplierName}</td><td><strong>${o.order}</strong></td>
+   <td>${o.date}</td><td>${o.material}</td><td>${o.desc}</td><td class="right">${o.qty}</td>
+   <td><span class="badge open">AÇIK</span></td>`;
+   body.appendChild(tr);
+ });
+ document.getElementById('resultCount').textContent=filtered.length+' kayıt bulundu';
+}
+
+function searchOrders(){
+ const s=document.getElementById('searchSupplier').value.toLowerCase().trim();
+ const o=document.getElementById('searchOrder').value.toLowerCase().trim();
+ const m=document.getElementById('searchMaterial').value.toLowerCase().trim();
+ filtered=orders.filter(x=>
+   (!s || x.supplier.toLowerCase().includes(s)||x.supplierName.toLowerCase().includes(s)) &&
+   (!o || x.order.toLowerCase().includes(o)) &&
+   (!m || x.material.toLowerCase().includes(m)||x.desc.toLowerCase().includes(m))
+ );
+ selectedIndex=-1; renderResults();
+}
+
+function selectOrder(i){
+ selectedIndex=i;
+ const o=filtered[i];
+ activeMaterial=o.material;
+ document.getElementById('selectedInfo').innerHTML=
+ `<strong>${o.supplierName}</strong><span>${o.supplier}</span><span class="muted">Sipariş: <b>${o.order}</b></span><span class="muted">Malzeme: <b>${o.material}</b></span>`;
+ document.getElementById('material').value=o.material;
+ document.getElementById('materialDesc').value=o.desc;
+ document.getElementById('barcode').value='';
+ document.getElementById('acceptQty').value=0;
+ orderRows=orders.filter(x=>x.supplier===o.supplier && x.material===o.material && x.qty>0)
+   .sort((a,b)=>parseDate(a.date)-parseDate(b.date)).map(x=>({...x,remaining:x.qty,accept:0}));
+ renderResults(); renderOrders(); updateSummary();
+}
+
+function parseDate(s){
+ const p=s.split('.'); return new Date(+p[2],+p[1]-1,+p[0]);
+}
+
+function scanBarcode(){
+ const code=document.getElementById('barcode').value.trim();
+ if(!selectedIndex>=0 && !activeMaterial){alert('Önce bir sipariş/tedarikçi seçin.');return}
+ const map={'8691001000012':'M-10025','8691001000040':'M-10040','8691001000019':'M-20010','8691001000026':'M-30015','8691001000033':'M-40020'};
+ const mat=map[code]||activeMaterial;
+ if(mat!==activeMaterial){alert('Okutulan barkod seçilen tedarikçiye ait değil.');return}
+ document.getElementById('material').value=mat;
+ const found=orders.find(x=>x.material===mat);
+ if(found) document.getElementById('materialDesc').value=found.desc;
+ document.getElementById('acceptQty').focus();
+}
+
+function allocate(){
+ const q=Number(document.getElementById('acceptQty').value)||0;
+ if(q<=0){alert('Mal kabul miktarını girin.');return}
+ let left=q;
+ orderRows.forEach(r=>r.accept=0);
+ for(const r of orderRows){
+   if(left<=0)break;
+   const take=Math.min(left,r.remaining);
+   r.accept=take; left-=take;
+ }
+ renderOrders(); updateSummary();
+ if(left>0) document.getElementById('saveStatus').textContent='Uyarı: Girilen miktarın '+left+' KO kadarı açık siparişlere dağıtılamadı.';
+ else document.getElementById('saveStatus').textContent='Miktar siparişlere otomatik dağıtıldı.';
+}
+
+function renderOrders(){
+ const body=document.getElementById('orderBody'); body.innerHTML='';
+ orderRows.forEach((r,i)=>{
+   const tr=document.createElement('tr'); tr.draggable=true; tr.dataset.i=i;
+   tr.className='order-row';
+   tr.innerHTML=`<td>${i+1}</td><td class="drag-handle">☷</td><td><strong>${r.order}</strong></td><td>${r.date}</td><td>${r.material}</td>
+   <td class="right">${r.qty}</td><td class="right">${r.remaining}</td><td class="right"><strong>${r.accept}</strong></td>
+   <td>${r.accept>=r.remaining && r.remaining>0?'<span class="badge done">KAPANACAK</span>':r.accept>0?'<span class="badge partial">KISMİ</span>':'<span class="badge open">AÇIK</span>'}</td>`;
+   tr.addEventListener('dragstart',()=>tr.classList.add('dragging'));
+   tr.addEventListener('dragend',()=>{tr.classList.remove('dragging');reorderRows()});
+   tr.addEventListener('dragover',e=>e.preventDefault());
+   tr.addEventListener('drop',e=>{
+     e.preventDefault();
+     const from=Number(document.querySelector('.dragging').dataset.i), to=i;
+     if(from===to)return;
+     const moved=orderRows.splice(from,1)[0]; orderRows.splice(to,0,moved);
+     renderOrders(); updateSummary();
+   });
+   body.appendChild(tr);
+ });
+ document.getElementById('totalOpen').textContent=orderRows.reduce((a,r)=>a+r.remaining,0);
+ document.getElementById('totalAccept').textContent=orderRows.reduce((a,r)=>a+r.accept,0);
+}
+function reorderRows(){renderOrders();updateSummary()}
+
+function updateSummary(){
+ const total=orderRows.reduce((a,r)=>a+r.accept,0);
+ const requested=Number(document.getElementById('acceptQty').value)||0;
+ document.getElementById('sumAccept').textContent=total+' KO';
+ document.getElementById('sumRemaining').textContent=Math.max(0,requested-total)+' KO';
+ document.getElementById('sumOrder').textContent=orderRows.find(r=>r.accept>0)?.order||'-';
+}
+
+document.getElementById('acceptQty').addEventListener('input',allocate);
+
+function newReceipt(){clearForm();window.scrollTo({top:0,behavior:'smooth'})}
+function clearForm(){
+ document.querySelectorAll('input').forEach(x=>{if(x.type!=='radio')x.value=''});
+ document.getElementById('acceptQty').value=0;
+ document.getElementById('warehouse').value='MERKEZ';
+ document.getElementById('selectedInfo').innerHTML='<span class="muted">Henüz bir kayıt seçilmedi.</span>';
+ document.getElementById('saveStatus').textContent='Mal kabul kayda hazır.';
+ document.getElementById('erpStatus').textContent='Hazır';
+ selectedIndex=-1;activeMaterial='';orderRows=[];filtered=[...orders];
+ renderResults();renderOrders();updateSummary();
+}
+function saveReceipt(){
+ const invoice=document.getElementById('invoiceNo').value.trim();
+ const total=orderRows.reduce((a,r)=>a+r.accept,0);
+ if(!invoice){alert('Lütfen irsaliye numarasını girin.');document.getElementById('invoiceNo').focus();return}
+ if(total<=0){alert('Önce barkod ve mal kabul miktarını girerek siparişlere dağıtım yapın.');return}
+ document.getElementById('erpStatus').textContent='GÜNCELLENDİ';
+ document.getElementById('saveStatus').textContent='Mal kabul kaydedildi. ERP sipariş/ürün güncellemesi demo olarak tamamlandı.';
+ alert('Mal kabul kaydedildi.\nERP sipariş ve ürün güncellemesi tamamlandı.');
+}
+function printLabel(){
+ const total=orderRows.reduce((a,r)=>a+r.accept,0);
+ if(total<=0){alert('Önce kabul miktarını dağıtın.');return}
+ const inv=document.getElementById('invoiceNo').value||'BELİRTİLMEDİ';
+ const mat=document.getElementById('material').value||'-';
+ const win=window.open('','_blank','width=500,height=500');
+ win.document.write(`<html><head><title>Etiket</title><style>body{font-family:Arial;padding:30px}.label{border:2px solid #222;padding:20px;width:380px}.title{font-size:20px;font-weight:bold;margin-bottom:20px}.row{padding:8px 0;border-bottom:1px solid #ccc}.big{font-size:25px;font-weight:bold}</style></head><body><div class="label"><div class="title">MAL KABUL ETİKETİ</div><div class="row">Malzeme: <b>${mat}</b></div><div class="row">Miktar: <span class="big">${total} KO</span></div><div class="row">İrsaliye: ${inv}</div><div class="row">Tarih: ${new Date().toLocaleDateString('tr-TR')}</div></div><script>window.print()<\/script></body></html>`);
+ win.document.close();
+}
+
+document.getElementById('receiptDate').value=new Date().toISOString().slice(0,10);
+document.getElementById('invoiceDate').value=new Date().toISOString().slice(0,10);
+renderResults();renderOrders();updateSummary();
+</script>
+</body>
+</html>
